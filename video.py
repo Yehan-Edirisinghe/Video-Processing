@@ -1,8 +1,9 @@
 import cv2 as cv
 import numpy as np
+from threading import Thread
 
 path_input = '/home/peppo/Documents/Video_processing/test.mp4'
-path_output = '/home/peppo/Documents/Video_processing/output.mjpg'
+path_output = '/home/peppo/Documents/Video_processing/output.mp4'
 
 def render(cap,out):
 
@@ -14,7 +15,7 @@ def render(cap,out):
     while cap.isOpened():
 
         ret, frame = cap.read() 
-        
+
         if not ret:             # if frame is read correctly ret is True
             print("Can't receive frame (stream end?). Exiting ...")
             break
@@ -22,13 +23,17 @@ def render(cap,out):
 
         tmp = np.zeros(frame.shape,dtype=np.uint8)
 
-        for x in range(frame_height):
-            for y in range(frame_width):
-                for i in range(3):
-                    
-                    tmp[x,y,i] = abs(oldFrame[x,y,i]-frame[x,y,i])
+        threads = list()
+        k = 2
+        for i in range(k):
 
+            x = Thread(target=func, args=(frame,oldFrame,tmp,range(int((i+1)*frame_height/k)),range(int(frame_width))),daemon=True)
+            x.start()
+            threads.append(x)
 
+        for i in range(k):
+            threads[i].join()
+        
         out.write(tmp)
 
         oldFrame[:] = frame
@@ -43,6 +48,19 @@ def render(cap,out):
     cap.release()
     cv.destroyAllWindows()
     cap.release()
+
+
+def func(frame,oldFrame,tmp,xlim,ylim):
+
+    for x in xlim:
+            for y in ylim:
+
+                for i in range(3):
+                    
+                    # tmp[x,y,i] = abs(oldFrame[x,y,i]-frame[x,y,i])
+                    tmp[x,y,i] = frame[x,y,i]
+
+    # return tmp
 
 if __name__ == '__main__':
 
