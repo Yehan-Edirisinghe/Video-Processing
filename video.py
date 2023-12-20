@@ -6,6 +6,11 @@ path_output = '/home/peppo/Documents/Video_processing/output.mp4'
 
 def render(cap,out):
 
+    frame_width = int(cap.get(3))
+    frame_height = int(cap.get(4))
+
+    tmp = np.zeros((frame_height,frame_width,3))
+
     while cap.isOpened():
 
         ret, frame = cap.read()
@@ -14,11 +19,12 @@ def render(cap,out):
             print("Can't receive frame (stream end?). Exiting ...")
             break
         
-
+        
         copy = np.empty_like(frame) 
         copy[:] = frame
 
-        out.write(copy)
+
+        # out.write(copy)
 
         
         gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
@@ -31,6 +37,9 @@ def render(cap,out):
     cap.release()
     cv.destroyAllWindows()
     cap.release()
+
+def reFrame(input,tmp):
+    pass
 
 if __name__ == '__main__':
 
