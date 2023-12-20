@@ -1,30 +1,29 @@
 import cv2 as cv
 import numpy as np
 
-path = '/home/peppo/Documents/Video_processing/test.mp4'
+path_input = '/home/peppo/Documents/Video_processing/test.mp4'
+path_output = '/home/peppo/Documents/Video_processing/output.mp4'
 
-
-def play(cap):
-
-    arr = np.array((cap.get(3),cap.get(4),3))
-    
-    list = []
+def render(cap,out):
 
     while cap.isOpened():
 
         ret, frame = cap.read()
         
+        if not ret:             # if frame is read correctly ret is True
+            print("Can't receive frame (stream end?). Exiting ...")
+            break
+        
+
         copy = np.empty_like(frame) 
         copy[:] = frame
 
-        list.append(copy)
+        out.write(copy)
 
-        # if frame is read correctly ret is True
-        if not ret:
-            print("Can't receive frame (stream end?). Exiting ...")
-            break
+        
         gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
         cv.imshow('frame', gray)
+
         if cv.waitKey(1) == ord('q'):
             break
 
@@ -33,24 +32,13 @@ def play(cap):
     cv.destroyAllWindows()
     cap.release()
 
-    return np.array(list)
-
-
-def write(out,frame):
-
-    out.write(frame)
-
 if __name__ == '__main__':
 
-    cap = cv.VideoCapture(path)
+    cap = cv.VideoCapture(path_input)
 
-    # frame_width = cap.get(3)
-    # frame_height = cap.get(4)
-    # fps = cap.get(5)
+    frame_width = int(cap.get(3))
+    frame_height = int(cap.get(4))
+    
+    out = cv.VideoWriter(path_output,cv.VideoWriter_fourcc('M','J','P','G'), 10, (frame_width,frame_height))
 
-    # print((cap.read().))
-
-    # out = cv.VideoWriter(filename='output.avi',fourcc=cv.VideoWriter_fourcc('M','J','P','G'), fps=fps, frameSize =(frame_width,frame_height))
-
-    data = play(cap)
-    print(data.size)
+    render(cap,out)
