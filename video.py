@@ -9,7 +9,7 @@ def render(cap,out):
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
 
-    tmp = np.zeros((frame_height,frame_width,3))
+    oldFrame = np.zeros((frame_height,frame_width,3))
 
     while cap.isOpened():
 
@@ -19,14 +19,14 @@ def render(cap,out):
             print("Can't receive frame (stream end?). Exiting ...")
             break
         
-        
-        copy = np.empty_like(frame) 
-        copy[:] = frame
 
+        modified = newFrame(frame,oldFrame)
 
-        # out.write(copy)
+        print(modified)
+        out.write(modified)
 
-        
+        oldFrame[:] = frame
+
         gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
         cv.imshow('frame', gray)
 
@@ -38,8 +38,17 @@ def render(cap,out):
     cv.destroyAllWindows()
     cap.release()
 
-def reFrame(input,tmp):
-    pass
+def newFrame(new,old):
+    
+    a = np.zeros(new.shape)
+
+    for x in range(new.shape[0]):
+        for y in range(new.shape[1]):
+            for i in range(3):
+                
+                a[x,y,i] = abs(old[x,y,i]-new[x,y,i])*5
+
+    return a.astype(np.uint8)
 
 if __name__ == '__main__':
 
